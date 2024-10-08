@@ -1,5 +1,6 @@
 import unittest.mock
 from functools import wraps
+from collections import OrderedDict
 
 
 def lru_cache(func=None, *, maxsize=None):
@@ -13,27 +14,26 @@ def lru_cache(func=None, *, maxsize=None):
 
 def _lru_cache_wrapper(maxsize=None):
     def decorator(func):
-        cache = []
+        cache = OrderedDict()
 
         @wraps(func)
         def wrapper(*args, **kwargs):
             nonlocal cache
 
-            args_hash = (
-                args
-                + tuple(key for key in kwargs)
-                + tuple(value for value in kwargs.values())
-            )
+            args_hash = args
+            if kwargs:
+                for items in kwargs.items():
+                    args_hash += items
 
-            for item in cache:
-                if args_hash in item:
-                    result = item[args_hash]
-                    break
+            if args_hash in cache:
+                result = cache[args_hash]
+
             else:
                 result = func(*args, **kwargs)
-                cache.append({args_hash: result})
-                if maxsize and len(cache) > maxsize:
-                    del cache[0]
+                cache[args_hash] = result
+
+                if maxsize and len(cache.items()) > maxsize:
+                    cache.popitem(last=False)
 
             return result
 
