@@ -85,7 +85,7 @@ async def main():
     ]
 
     save_task = asyncio.create_task(
-        save_to_file(q_results=q_results, file_path="results.jsonl")
+        save_to_file(q_results=q_results, file_path=f"{__file__}_results.jsonl")
     )
 
     for url in urls:
