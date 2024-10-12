@@ -1,7 +1,10 @@
 import asyncio
 import json
+import string
 from asyncio import Semaphore
 from enum import Enum
+import time
+import random
 
 import aiohttp
 
@@ -12,13 +15,7 @@ class StatusErrorEnum(Enum):
     other_aiohttp_client_error = 0
 
 
-URLS = [
-    "ht://hello.com",
-    "https://nonexistent.url",
-    "hello",
-    "https://example.com",
-    "https://httpbin.org/status/404",
-]
+URLS = [f"https://{''.join(random.choices(string.ascii_letters, k=7))}" for _ in range(100)]
 
 
 def write_to_file(data: list, file_path: str):
@@ -56,12 +53,17 @@ async def fetch_urls(urls: list[str], concurrent_requests_constraint: int):
         # status_tasks = []
         #
         # for url in urls:
-        #     task = asyncio.create_task(fetch_status_from_url(url=url, session=session, semaphore=semaphore))
+        #     task = asyncio_.create_task(fetch_status_from_url(url=url, session=session, semaphore=semaphore))
         #     status_tasks.append(task)
 
-        return await asyncio.gather(*status_tasks, return_exceptions=True)
+        results = await asyncio.gather(*status_tasks, return_exceptions=True)
+        print(results)
+        return results
 
 
 if __name__ == "__main__":
+    start = time.time()
     result_list = asyncio.run(fetch_urls(URLS, 5))
     write_to_file(result_list, "results.json")
+    end = time.time()
+    print(f"{end - start:.3f}")
