@@ -186,3 +186,7 @@ fabric.properties
 
 main.py
 examples/
+*.jsonl
+*.json
+
+*.sqlite3
