@@ -1,5 +1,5 @@
-from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import Prefetch
+import django.db.utils
+from django.db.models import F
 from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -31,15 +31,8 @@ class BookViewSet(
     def buy(self, request, pk):
         try:
             book = self.get_object()
-            new_count = book.count - 1
-            if new_count < 0:
-                return Response({"status": "error", "detail": "all books are sold"})
-            book.count = new_count
-            book.save()
-
-        except ObjectDoesNotExist:
-            return Response(
-                {"status": "error", "detail": f"Book with id {pk} does not exist"}
-            )
-
-        return Response({"status": "success", "count": new_count})
+            book.count = F("count") - 1
+            book.save(update_fields=("count",))
+            return Response({"status": "success"})
+        except django.db.utils.IntegrityError as e:
+            return Response({"status": "error", "detail": "all books are sold"})
